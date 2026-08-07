@@ -9,6 +9,8 @@ while True:
         print("Could not access camera")
         break
 
+    print("Frame shape:", frame.shape)
+
     cv2.imshow("Vision AI", frame)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):

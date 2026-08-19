@@ -6,11 +6,12 @@ A lightweight and efficient computer vision project leveraging **Ultralytics YOL
 
 ## 📌 What is this Project?
 
-This project is a starting point for building Vision AI applications. It contains four main scripts:
+This project is a starting point for building Vision AI applications. It contains five main scripts:
 1. **`camera.py`**: A diagnostic script that verifies your webcam/camera connection, reads frames, prints their dimensions, and displays the raw video stream.
 2. **`yolo_camera.py`**: A real-time object detection pipeline that captures frames from your webcam, runs them through the YOLOv11 Nano model, annotates the frames with bounding boxes and labels (e.g., person, laptop, cup), and displays the live annotated video stream.
 3. **`yolo_results.py`**: A script similar to `yolo_camera.py` but with console output enabled. It detects objects in real-time, displays the annotated webcam stream, and prints each detected object's class name and confidence score to the terminal.
-4. **`yolo_image.py`**: A script that runs YOLOv11 inference on static images (e.g., `images/test.jpg`) and opens a window displaying the detected objects.
+4. **`yolo_camdroid.py`**: A real-time object detection script that connects to an external phone camera stream (IP Webcam, DroidCam, etc.) over Wi-Fi, prints identified classes, and displays the annotated feed.
+5. **`yolo_image.py`**: A script that runs YOLOv11 inference on static images (e.g., `images/test.jpg`) and opens a window displaying the detected objects.
 
 The project uses the lightweight **`yolo11n.pt`** (YOLOv11 Nano) model weights, which are optimized for fast inference on standard CPUs and edge devices.
 
@@ -35,6 +36,7 @@ vision-AI/
 ├── camera.py              # Camera connection tester
 ├── yolo_camera.py         # Real-time webcam object detection script
 ├── yolo_results.py        # Webcam object detection with terminal logs
+├── yolo_camdroid.py       # Real-time phone camera object detection script
 ├── yolo_image.py          # Static image object detection script
 ├── yolo11n.pt             # YOLOv11 Nano pre-trained model weights (PyTorch)
 ├── requirements.txt       # Project dependencies and libraries
@@ -104,18 +106,34 @@ python yolo_image.py
 * **Expectation**: The script will run the model on `images/test.jpg` and display the annotated result in an image viewer.
 * **Exit**: Close the image window or press any key to exit.
 
+#### 5. Run Object Detection using Phone Camera
+To run detection using an external phone camera over the same Wi-Fi network:
+```bash
+python yolo_camdroid.py
+```
+* **Setup**:
+  1. Install **IP Webcam** (Android) or **DroidCam** (Android/iOS) on your phone.
+  2. Start the server/stream in the mobile app.
+  3. Ensure your phone and computer are on the same Wi-Fi.
+  4. Follow the interactive setup prompts to enter the stream URL or IP/Port.
+* **CLI Custom URL option**:
+  ```bash
+  python yolo_camdroid.py --url http://192.168.1.50:8080/video
+  ```
+* **Expectation**: The terminal will print recognized classes and confidence scores while displaying the live annotated stream from your phone camera.
+* **Exit**: Press **`q`** on your keyboard while focusing the video window to close it.
+
 ---
 
 ## ⚠️ Troubleshooting & Customizations
 
 ### 1. Camera Access Issues
-If you see the error message **`Could not access camera`**:
-* Make sure your webcam is not being used by another application (e.g., Zoom, Teams, Discord).
-* If you have multiple webcams connected, you may need to change the camera index in `camera.py` and `yolo_camera.py`:
-  ```python
-  # Change 0 to 1, 2, etc., if the default camera index is incorrect
-  camera = cv2.VideoCapture(1)
-  ```
+If you see the error message **`Could not access camera`** or **`Could not connect to camera stream`**:
+* **Webcam**: Make sure your webcam is not being used by another application (e.g., Zoom, Teams, Discord). If you have multiple webcams connected, you may need to change the camera index in `camera.py` and `yolo_camera.py` (e.g., `cv2.VideoCapture(1)`).
+* **Phone Camera**:
+  * Double check that the IP address/Port matches the streaming app.
+  * Ensure the phone and computer are on the **exact same Wi-Fi network**.
+  * Verify if you can access the stream in a browser on your computer (e.g. paste the IP/Port in your address bar).
 
 ### 2. Speeding up Inference (GPU Support)
 By default, the scripts run on your CPU. If you have an NVIDIA GPU and want to run YOLO with CUDA acceleration:

@@ -28,56 +28,33 @@ def interactive_get_url():
     print("=" * 60)
     print("           Vision AI - Phone Camera Setup Guide")
     print("=" * 60)
-    print("To use your phone's camera, you need a mobile app that streams")
-    print("video over Wi-Fi. Common apps include:")
-    print("  1. IP Webcam (Android) - typically streams on port 8080")
-    print("  2. DroidCam (Android/iOS) - typically streams on port 4747")
-    print("\nEnsure your phone and computer are connected to the SAME Wi-Fi network.")
-    print("-" * 60)
+    print("Select your mobile streaming app:")
+    print("  1. DroidCam (default)")
+    print("  2. IP Webcam")
+    choice = input("Enter choice (1 or 2) [default: 1]: ").strip()
 
-    url = input("Enter stream URL (or press Enter to configure via IP/Port): ").strip()
-    if url:
-        return url
-
-    ip = input("Enter phone IP address (e.g., 10.0.2.13 or 10.0.2.13:4747): ").strip()
+    ip = input("\nEnter the IP address shown on your phone (e.g., 10.0.2.13): ").strip()
     if not ip:
-        print("Error: IP address is required if direct URL is not provided.")
+        print("[ERROR] IP address is required.")
         sys.exit(1)
 
-    # If the user input is a full HTTP URL in the IP field, return it directly
-    if ip.startswith("http://") or ip.startswith("https://"):
-        return ip
-
-    # Default port configuration
-    port = "8080"
-    
-    # Auto-extract port if user appended it to the IP address (e.g. 10.0.2.13:4747)
+    # Clean the input in case the user accidentally pasted a full URL or port
+    if "://" in ip:
+        ip = ip.split("://")[1]
     if ":" in ip:
-        parts = ip.split(":")
-        ip = parts[0]
-        port = parts[1]
-        
-    user_port = input(f"Enter port (default {port}): ").strip()
-    if user_port:
-        port = user_port
+        ip = ip.split(":")[0]
+    if "/" in ip:
+        ip = ip.split("/")[0]
 
-    # Default to standard IP Webcam /video endpoint.
-    # DroidCam usually uses /video or /mjpegfeed
-    print("\nChoose camera stream type:")
-    print("  1. IP Webcam (/video)")
-    print("  2. DroidCam (/video or /mjpegfeed)")
-    print("  3. Custom URL path")
-    choice = input("Select option (1-3) [default: 1]: ").strip()
-
+    # Build the exact stream URL based on the selected app
     if choice == "2":
-        return f"http://{ip}:{port}/video"
-    elif choice == "3":
-        path = input("Enter path (e.g., /mjpegfeed): ").strip()
-        if not path.startswith("/"):
-            path = "/" + path
-        return f"http://{ip}:{port}{path}"
+        # IP Webcam uses port 8080 and /video path
+        return f"http://{ip}:8080/video"
     else:
-        return f"http://{ip}:{port}/video"
+        # DroidCam uses port 4747 and /video path
+        return f"http://{ip}:4747/video"
+
+
 
 def main():
     args = get_args()

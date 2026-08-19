@@ -111,16 +111,17 @@ To run detection using an external phone camera over the same Wi-Fi network:
 ```bash
 python yolo_camdroid.py
 ```
-* **Setup**:
-  1. Install **IP Webcam** (Android) or **DroidCam** (Android/iOS) on your phone.
-  2. Start the server/stream in the mobile app.
-  3. Ensure your phone and computer are on the same Wi-Fi.
-  4. Follow the interactive setup prompts to enter the stream URL or IP/Port.
+* **Setup Options**:
+  * **Option 1: DroidCam PC Client (Local Virtual Webcam) [Recommended]**
+    * If you are running the DroidCam client app on your computer, choose option `1` and enter your local camera device index (default: `4`). This reads from the virtual webcam device created by the desktop client.
+  * **Option 2/3: Direct IP Connection (Direct Wi-Fi)**
+    * Choose `2` (DroidCam) or `3` (IP Webcam).
+    * Enter the phone's IP address (e.g., `192.168.1.50`) shown on your mobile app screen.
 * **CLI Custom URL option**:
   ```bash
   python yolo_camdroid.py --url http://192.168.1.50:8080/video
   ```
-* **Expectation**: The terminal will print recognized classes and confidence scores while displaying the live annotated stream from your phone camera.
+* **Expectation**: The terminal will print recognized classes and confidence scores while displaying the live annotated stream.
 * **Exit**: Press **`q`** on your keyboard while focusing the video window to close it.
 
 ---

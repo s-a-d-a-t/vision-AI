@@ -28,60 +28,78 @@ def interactive_get_url():
     print("=" * 60)
     print("           Vision AI - Phone Camera Setup Guide")
     print("=" * 60)
-    print("Select your mobile streaming app:")
-    print("  1. DroidCam (default)")
-    print("  2. IP Webcam")
-    choice = input("Enter choice (1 or 2) [default: 1]: ").strip()
+    print("Select your connection method:")
+    print("  1. DroidCam PC Client (Local Virtual Webcam - e.g. /dev/video4) [default]")
+    print("  2. DroidCam Direct IP (Direct Wi-Fi connection to phone)")
+    print("  3. IP Webcam Direct IP (Direct Wi-Fi connection to phone)")
+    choice = input("Enter choice (1-3) [default: 1]: ").strip()
 
-    ip = input("\nEnter the IP address shown on your phone (e.g., 10.0.2.13): ").strip()
-    if not ip:
-        print("[ERROR] IP address is required.")
-        sys.exit(1)
+    if choice == "2" or choice == "3":
+        ip = input("\nEnter the IP address shown on your phone (e.g., 10.0.2.13): ").strip()
+        if not ip:
+            print("[ERROR] IP address is required.")
+            sys.exit(1)
 
-    # Clean the input in case the user accidentally pasted a full URL or port
-    if "://" in ip:
-        ip = ip.split("://")[1]
-    if ":" in ip:
-        ip = ip.split(":")[0]
-    if "/" in ip:
-        ip = ip.split("/")[0]
+        # Clean the input in case the user accidentally pasted a full URL or port
+        if "://" in ip:
+            ip = ip.split("://")[1]
+        if ":" in ip:
+            ip = ip.split(":")[0]
+        if "/" in ip:
+            ip = ip.split("/")[0]
 
-    # Build the exact stream URL based on the selected app
-    if choice == "2":
-        # IP Webcam uses port 8080 and /video path
-        return f"http://{ip}:8080/video"
+        if choice == "3":
+            # IP Webcam uses port 8080 and /video path
+            return f"http://{ip}:8080/video"
+        else:
+            # DroidCam uses port 4747 and /video path
+            return f"http://{ip}:4747/video"
     else:
-        # DroidCam uses port 4747 and /video path
-        return f"http://{ip}:4747/video"
-
+        # Local device index (DroidCam PC Client)
+        print("\nNote: Your recently active DroidCam camera index is likely 4.")
+        device_idx = input("Enter camera device index [default: 4]: ").strip()
+        if not device_idx:
+            device_idx = "4"
+        return device_idx
 
 
 def main():
     args = get_args()
 
-    # Determine connection URL
+    # Determine connection URL or device index
     if args.url:
-        stream_url = args.url
+        stream_source = args.url
     elif args.ip:
         port = args.port if args.port else "8080"
-        stream_url = f"http://{args.ip}:{port}/video"
+        stream_source = f"http://{args.ip}:{port}/video"
     else:
-        stream_url = interactive_get_url()
+        stream_source = interactive_get_url()
 
-    print(f"\n[INFO] Connecting to phone camera stream at: {stream_url}")
+    # If stream_source can be parsed as an integer, convert it
+    try:
+        source = int(stream_source)
+        print(f"\n[INFO] Connecting to local camera device index: {source}")
+    except ValueError:
+        source = stream_source
+        print(f"\n[INFO] Connecting to phone camera stream at: {source}")
+
     print("[INFO] Loading YOLOv11 Nano model...")
     model = YOLO("yolo11n.pt")
 
-    camera = cv2.VideoCapture(stream_url)
+    camera = cv2.VideoCapture(source)
 
     # Check if stream opened successfully
     if not camera.isOpened():
-        print("\n[ERROR] Could not connect to camera stream.")
+        print(f"\n[ERROR] Could not connect to camera source: {source}")
         print("Troubleshooting steps:")
-        print("  1. Double check that the IP address and Port are correct.")
-        print("  2. Make sure the streaming app is actively running on your phone.")
-        print("  3. Ensure both phone and computer are on the exact same Wi-Fi network.")
-        print("  4. Verify if you can access the stream in a browser on your computer.")
+        if isinstance(source, int):
+            print("  1. Make sure DroidCam client app on your PC is open and streaming.")
+            print("  2. Try another device index (e.g. 0, 1, 2, or 3) if 4 is not correct.")
+        else:
+            print("  1. Double check that the IP address and Port are correct.")
+            print("  2. Make sure the streaming app is actively running on your phone.")
+            print("  3. Ensure both phone and computer are on the exact same Wi-Fi network.")
+            print("  4. Verify if you can access the stream in a browser on your computer.")
         sys.exit(1)
 
     print("[INFO] Connection established successfully! Press 'q' on the video window to quit.\n")
@@ -90,7 +108,7 @@ def main():
         success, frame = camera.read()
 
         if not success:
-            print("\n[ERROR] Lost connection to camera stream.")
+            print("\n[ERROR] Lost connection to camera source.")
             break
 
         results = model(frame)

@@ -39,14 +39,27 @@ def interactive_get_url():
     if url:
         return url
 
-    ip = input("Enter phone IP address (e.g., 192.168.1.50): ").strip()
+    ip = input("Enter phone IP address (e.g., 10.0.2.13 or 10.0.2.13:4747): ").strip()
     if not ip:
         print("Error: IP address is required if direct URL is not provided.")
         sys.exit(1)
 
-    port = input("Enter port (default 8080): ").strip()
-    if not port:
-        port = "8080"
+    # If the user input is a full HTTP URL in the IP field, return it directly
+    if ip.startswith("http://") or ip.startswith("https://"):
+        return ip
+
+    # Default port configuration
+    port = "8080"
+    
+    # Auto-extract port if user appended it to the IP address (e.g. 10.0.2.13:4747)
+    if ":" in ip:
+        parts = ip.split(":")
+        ip = parts[0]
+        port = parts[1]
+        
+    user_port = input(f"Enter port (default {port}): ").strip()
+    if user_port:
+        port = user_port
 
     # Default to standard IP Webcam /video endpoint.
     # DroidCam usually uses /video or /mjpegfeed
